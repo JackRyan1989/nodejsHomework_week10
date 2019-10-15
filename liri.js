@@ -114,14 +114,20 @@ inquirer.prompt(questions).then(function (answers) {
             var artist = answers.concert;
             axios.get("https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp").then(
                 function (response) {
-                    console.log(response.data[1]);
-                    for (i = 0; i < response.data.length; i++) {
-                    console.log("---------------Venue---------------");
-                    console.log(response.data[i].venue.name);
-                    console.log("---------------Location---------------");
-                    console.log(response.data[i].venue.city + ", " + response.data[i].venue.region + ", " + response.data[i].venue.country);
-                    console.log("---------------Date---------------");
-                    console.log(response.data[i].datetime);
+                    if (response.data === '\n{warn=Not found}\n') {
+                        return console.log("Band not found. Try again.");
+                    } else {
+                        for (i = 0; i < response.data.length; i++) {
+                            var mom = moment(response.data[i].datetime).format("MM/DD/YYYY");
+                            console.log("                                   ");
+                            console.log("---------------Venue---------------");
+                            console.log(response.data[i].venue.name);
+                            console.log("---------------Location---------------");
+                            console.log(response.data[i].venue.city + ", " + response.data[i].venue.region + ", " + response.data[i].venue.country);
+                            console.log("---------------Date---------------");
+                            console.log(mom);
+                            console.log("                                   ");
+                        }
                     }
                 }).catch(function (error) {
                     if (error.response) {
