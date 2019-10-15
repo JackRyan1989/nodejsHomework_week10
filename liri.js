@@ -1,12 +1,12 @@
 //Require the filesystem so we can read and write files:
 var fs = require('fs');
 
-//Require dotenv so that we can pull in the API keys specific to my user.
+//Require dotenv so that we can pull in the API keys specific to my user
 require('dotenv').config();
-var keys = require('./keys.js');
-
+var keys = require('./keys');
 //Require the spotify api:
-var spotify = require('node-spotify-api');
+var Spotify = require('node-spotify-api');
+var neuSpotify = new Spotify(keys.spotify);
 
 //Require the moment.js node package:
 var moment = require('moment');
@@ -95,6 +95,7 @@ inquirer.prompt(questions).then(function (answers) {
                         console.log(response.data.Plot);
                         console.log("---------------Cast---------------");
                         console.log(response.data.Actors);
+                        console.log("                                   ");
                     }
                 })
                 .catch(function (error) {
@@ -144,9 +145,133 @@ inquirer.prompt(questions).then(function (answers) {
             break;
         case 'Song Search':
             console.log("Song search");
+            var song = answers.song;
+            neuSpotify
+                .search({ type: 'track', query: song })
+                .then(function (responses) {
+                    console.log(responses.tracks.length);
+                    for (i = 0; i < responses.tracks.length; i++) {
+                        console.log("                                   ");
+                        console.log("---------------Song Name---------------");
+                        console.log(responses.tracks.items[i].name);
+                        console.log("---------------Artist(s)---------------");
+                        console.log(responses.tracks.items[i].album.artists[0].name);
+                        console.log("---------------Album---------------");
+                        console.log(responses.tracks.items[i].album.name);
+                        console.log("---------------Link---------------");
+                        console.log(responses.tracks.items[i].album.external_urls[0].spotify);
+                        console.log("                                   ");
+                    }
+                }).catch(function (err) {
+                    console.log(err);
+                });
             break;
         case 'File Input':
-            console.log("Search from file");
+            var fileName = answers.fileName;
+            fs.readFile('./' + fileName, "utf-8", function (err, data) {
+                if (err) {
+                    return console.log("Input file cannot be found or read.");
+                } else {
+                    var inputArr = data.split(',');
+                    var nextToDo = inputArr[0];
+                    var item = inputArr[1];
+                    //Nested switch case:
+                    switch (nextToDo) {
+                        case 'Movie Info':
+                            axios.get("http://www.omdbapi.com/?t=" + item + "&y=&plot=short&apikey=42a11145").then(
+                                function (response) {
+                                    if (response.data.Title === undefined) {
+                                        return console.log("Movie not found. Search again.");
+                                    } else {
+                                        console.log("---------------Title---------------");
+                                        console.log(response.data.Title);
+                                        console.log("---------------Release Year---------------");
+                                        console.log(response.data.Year);
+                                        console.log("---------------IMDB Rating---------------");
+                                        console.log(response.data.imdbRating);
+                                        console.log("---------------Rotten Tomatoes Tomatometer---------------");
+                                        console.log(response.data.Ratings[1].Value);
+                                        console.log("---------------Country of Production---------------");
+                                        console.log(response.data.Country);
+                                        console.log("---------------Language---------------");
+                                        console.log(response.data.Language);
+                                        console.log("---------------Plot---------------");
+                                        console.log(response.data.Plot);
+                                        console.log("---------------Cast---------------");
+                                        console.log(response.data.Actors);
+                                        console.log("                                   ");
+                                    }
+                                })
+                                .catch(function (error) {
+                                    if (error.response) {
+                                        // The request was made and the server responded with a status code
+                                        // that falls out of the range of 2xx
+                                        console.log("---------------Data---------------");
+                                        console.log(error.response.data);
+                                        console.log("---------------Status---------------");
+                                        console.log(error.response.status);
+                                        console.log("---------------Status---------------");
+                                        console.log(error.response.headers);
+                                    }
+                                });
+                            break;
+                        case 'Fav Band Concerts':
+                            axios.get("https://rest.bandsintown.com/artists/" + item + "/events?app_id=codingbootcamp").then(
+                                function (response) {
+                                    if (response.data === '\n{warn=Not found}\n') {
+                                        return console.log("Band not found. Try again.");
+                                    } else {
+                                        for (i = 0; i < response.data.length; i++) {
+                                            var mom = moment(response.data[i].datetime).format("MM/DD/YYYY");
+                                            console.log("                                   ");
+                                            console.log("---------------Venue---------------");
+                                            console.log(response.data[i].venue.name);
+                                            console.log("---------------Location---------------");
+                                            console.log(response.data[i].venue.city + ", " + response.data[i].venue.region + ", " + response.data[i].venue.country);
+                                            console.log("---------------Date---------------");
+                                            console.log(mom);
+                                            console.log("                                   ");
+                                        }
+                                    }
+                                }).catch(function (error) {
+                                    if (error.response) {
+                                        // The request was made and the server responded with a status code
+                                        // that falls out of the range of 2xx
+                                        console.log("---------------Data---------------");
+                                        console.log(error.response.data);
+                                        console.log("---------------Status---------------");
+                                        console.log(error.response.status);
+                                        console.log("---------------Status---------------");
+                                        console.log(error.response.headers);
+                                    }
+                                });
+                            break;
+                        case 'Song Search':
+                            console.log("Song search");
+                            neuSpotify
+                                .search({ type: 'track', query: item })
+                                .then(function (responses) {
+                                    console.log(responses.tracks.length);
+                                    for (i = 0; i < responses.tracks.length; i++) {
+                                        console.log("                                   ");
+                                        console.log("---------------Song Name---------------");
+                                        console.log(responses.tracks.items[i].name);
+                                        console.log("---------------Artist(s)---------------");
+                                        console.log(responses.tracks.items[i].album.artists[0].name);
+                                        console.log("---------------Album---------------");
+                                        console.log(responses.tracks.items[i].album.name);
+                                        console.log("---------------Link---------------");
+                                        console.log(responses.tracks.items[i].album.external_urls[0].spotify);
+                                        console.log("                                   ");
+                                    }
+                                }).catch(function (err) {
+                                    console.log(err);
+                                });
+                            break;
+
+                    }
+                }
+            });
             break;
     }
 });
