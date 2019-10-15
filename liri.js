@@ -17,6 +17,7 @@ var axios = require('axios');
 //Require inquirer for a sensuous user interface: 
 var inquirer = require('inquirer');
 
+//Function to write the output of each search operation to a .txt file
 writeToLog = function (searchOutput) {
     searchOutput = JSON.stringify(searchOutput);
     fs.writeFile('./log.txt', searchOutput, function (err) {
@@ -24,8 +25,9 @@ writeToLog = function (searchOutput) {
             return console.log("Error writing output file.");
         }
     });
-}
+};
 
+//Ask some questions of the user. These questions dictate the flow of the program. 
 var questions = [
     {
         type: "list",
@@ -79,6 +81,7 @@ var questions = [
     }
 ];
 
+//When you have the answers to the above questions, switch some cases based on them.
 inquirer.prompt(questions).then(function (answers) {
     var toDo = answers.whatDo;
     switch (toDo) {
@@ -105,13 +108,15 @@ inquirer.prompt(questions).then(function (answers) {
                         console.log("---------------Cast---------------");
                         console.log(response.data.Actors);
                         console.log("                                   ");
+                        //Consolidate the responses to put into the .txt file:
                         searchOutput =
                             "Title: " + response.data.Title + " ReleaseYear: " + response.data.Year + " IMDB Rating: " + response.data.imdbRating + " Rotten Tomatoes: " + response.data.Ratings[1].Value +
                             " Country: " + response.data.Country + " Language: " + response.data.Language + " Plot: " + response.data.Plot + " Cast: " + response.data.Actors;
-
+                        //Write out the responses to the .txt file
                         writeToLog(searchOutput);
                     }
                 })
+                //If something goes wrong:
                 .catch(function (error) {
                     if (error.response) {
                         // The request was made and the server responded with a status code
@@ -125,10 +130,12 @@ inquirer.prompt(questions).then(function (answers) {
                     }
                 });
             break;
+            //If the user wants to search for their favorite band's upcoming concerts:
         case 'Fav Band Concerts':
             var artist = answers.concert;
             axios.get("https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp").then(
                 function (response) {
+                    var output = [];
                     if (response.data === '\n{warn=Not found}\n') {
                         return console.log("Band not found. Try again.");
                     } else {
@@ -142,8 +149,12 @@ inquirer.prompt(questions).then(function (answers) {
                             console.log("---------------Date---------------");
                             console.log(mom);
                             console.log("                                   ");
-                        
+                            var venue = response.data[i].venue.name;
+                            var loc = (response.data[i].venue.city + ", " + response.data[i].venue.region + ", " + response.data[i].venue.country);
+                            var date = mom;
+                            output.push(venue, loc, date);
                         }
+                        writeToLog(output);
                     }
                 }).catch(function (error) {
                     if (error.response) {
@@ -158,6 +169,7 @@ inquirer.prompt(questions).then(function (answers) {
                     }
                 });
             break;
+            //If the user wants to search for a song:
         case 'Song Search':
             console.log("Song search");
             var song = answers.song;
@@ -175,11 +187,18 @@ inquirer.prompt(questions).then(function (answers) {
                         console.log("---------------Link---------------");
                         console.log(responses.tracks.items[i].album.external_urls);
                         console.log("                                   ");
+                        var song = responses.tracks.items[i].name;
+                        var artists = responses.tracks.items[i].album.artists[0].name;
+                        var album = responses.tracks.items[i].album.name;
+                        var link = responses.tracks.items[i].album.external_urls;
+                        output.push(song, artists, album, link);
                     }
+                    writeToLog(output);
                 }).catch(function (err) {
                     console.log(err);
                 });
             break;
+            //If the user wants to call a file with the operation and thing to search for.
         case 'File Input':
             var fileName = answers.fileName;
             fs.readFile('./' + fileName, "utf-8", function (err, data) {
@@ -189,7 +208,7 @@ inquirer.prompt(questions).then(function (answers) {
                     var inputArr = data.split(',');
                     var nextToDo = inputArr[0];
                     var item = inputArr[1];
-                    //Nested switch case:
+                    //Nested switch case to do exact same (I know, it's redundant) case switching as above, except based on file input.
                     switch (nextToDo) {
                         case 'Movie Info':
                             axios.get("http://www.omdbapi.com/?t=" + item + "&y=&plot=short&apikey=42a11145").then(
@@ -215,7 +234,7 @@ inquirer.prompt(questions).then(function (answers) {
                                         console.log(response.data.Actors);
                                         console.log("                                   ");
                                         searchOutput =
-                                            "Title: " + response.data.Title + " ReleaseYear: " + response.data.Year + " IMDB Rating: " + response.data.imdbRating + " Rotten Tomatoes: " + response.data.Ratings[1].Value  +
+                                            "Title: " + response.data.Title + " ReleaseYear: " + response.data.Year + " IMDB Rating: " + response.data.imdbRating + " Rotten Tomatoes: " + response.data.Ratings[1].Value +
                                             " Country: " + response.data.Country + " Language: " + response.data.Language + " Plot: " + response.data.Plot + " Cast: " + response.data.Actors;
 
                                         writeToLog(searchOutput);
@@ -237,6 +256,7 @@ inquirer.prompt(questions).then(function (answers) {
                         case 'Fav Band Concerts':
                             axios.get("https://rest.bandsintown.com/artists/" + item + "/events?app_id=codingbootcamp").then(
                                 function (response) {
+                                    var output = [];
                                     if (response.data === '\n{warn=Not found}\n') {
                                         return console.log("Band not found. Try again.");
                                     } else {
@@ -250,8 +270,13 @@ inquirer.prompt(questions).then(function (answers) {
                                             console.log("---------------Date---------------");
                                             console.log(mom);
                                             console.log("                                   ");
+                                            var venue = response.data[i].venue.name;
+                                            var loc = (response.data[i].venue.city + ", " + response.data[i].venue.region + ", " + response.data[i].venue.country);
+                                            var date = mom;
+                                            output.push(venue, loc, date);
                                         }
-                                    } 
+                                        writeToLog(output);
+                                    }
                                 }).catch(function (error) {
                                     if (error.response) {
                                         // The request was made and the server responded with a status code
@@ -269,6 +294,7 @@ inquirer.prompt(questions).then(function (answers) {
                             neuSpotify
                                 .search({ type: 'track', query: item })
                                 .then(function (responses) {
+                                    var output = [];
                                     for (i = 0; i < responses.tracks.items.length; i++) {
                                         console.log("                                   ");
                                         console.log("---------------Song Name---------------");
@@ -280,7 +306,13 @@ inquirer.prompt(questions).then(function (answers) {
                                         console.log("---------------Link---------------");
                                         console.log(responses.tracks.items[i].album.external_urls);
                                         console.log("                                   ");
+                                        var song = responses.tracks.items[i].name;
+                                        var artists = responses.tracks.items[i].album.artists[0].name;
+                                        var album = responses.tracks.items[i].album.name;
+                                        var link = responses.tracks.items[i].album.external_urls;
+                                        output.push(song, artists, album, link);
                                     }
+                                    writeToLog(output);
                                 })
                                 .catch(function (err) {
                                     console.log(err);
