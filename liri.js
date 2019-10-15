@@ -149,8 +149,7 @@ inquirer.prompt(questions).then(function (answers) {
             neuSpotify
                 .search({ type: 'track', query: song })
                 .then(function (responses) {
-                    console.log(responses.tracks.length);
-                    for (i = 0; i < responses.tracks.length; i++) {
+                    for (i = 0; i < responses.tracks.items.length; i++) {
                         console.log("                                   ");
                         console.log("---------------Song Name---------------");
                         console.log(responses.tracks.items[i].name);
@@ -159,7 +158,7 @@ inquirer.prompt(questions).then(function (answers) {
                         console.log("---------------Album---------------");
                         console.log(responses.tracks.items[i].album.name);
                         console.log("---------------Link---------------");
-                        console.log(responses.tracks.items[i].album.external_urls[0].spotify);
+                        console.log(responses.tracks.items[i].album.external_urls);
                         console.log("                                   ");
                     }
                 }).catch(function (err) {
@@ -247,12 +246,10 @@ inquirer.prompt(questions).then(function (answers) {
                                 });
                             break;
                         case 'Song Search':
-                            console.log("Song search");
                             neuSpotify
                                 .search({ type: 'track', query: item })
                                 .then(function (responses) {
-                                    console.log(responses.tracks.length);
-                                    for (i = 0; i < responses.tracks.length; i++) {
+                                    for (i = 0; i < responses.tracks.items.length; i++) {
                                         console.log("                                   ");
                                         console.log("---------------Song Name---------------");
                                         console.log(responses.tracks.items[i].name);
@@ -261,18 +258,20 @@ inquirer.prompt(questions).then(function (answers) {
                                         console.log("---------------Album---------------");
                                         console.log(responses.tracks.items[i].album.name);
                                         console.log("---------------Link---------------");
-                                        console.log(responses.tracks.items[i].album.external_urls[0].spotify);
+                                        console.log(responses.tracks.items[i].album.external_urls);
                                         console.log("                                   ");
                                     }
-                                }).catch(function (err) {
+                                })
+                            .catch(function (err) {
                                     console.log(err);
-                                });
-                            break;
-
-                    }
-                }
-            });
+                            });
+                                
             break;
+
+    }
+}
+            });
+break;
     }
 });
 
