@@ -17,6 +17,15 @@ var axios = require('axios');
 //Require inquirer for a sensuous user interface: 
 var inquirer = require('inquirer');
 
+writeToLog = function (searchOutput) {
+    searchOutput = JSON.stringify(searchOutput);
+    fs.writeFile('./log.txt', searchOutput, function (err) {
+        if (err) {
+            return console.log("Error writing output file.");
+        }
+    });
+}
+
 var questions = [
     {
         type: "list",
@@ -96,6 +105,11 @@ inquirer.prompt(questions).then(function (answers) {
                         console.log("---------------Cast---------------");
                         console.log(response.data.Actors);
                         console.log("                                   ");
+                        searchOutput =
+                            "Title: " + response.data.Title + " ReleaseYear: " + response.data.Year + " IMDB Rating: " + response.data.imdbRating + " Rotten Tomatoes: " + response.data.Ratings[1].Value +
+                            " Country: " + response.data.Country + " Language: " + response.data.Language + " Plot: " + response.data.Plot + " Cast: " + response.data.Actors;
+
+                        writeToLog(searchOutput);
                     }
                 })
                 .catch(function (error) {
@@ -128,6 +142,7 @@ inquirer.prompt(questions).then(function (answers) {
                             console.log("---------------Date---------------");
                             console.log(mom);
                             console.log("                                   ");
+                        
                         }
                     }
                 }).catch(function (error) {
@@ -199,6 +214,11 @@ inquirer.prompt(questions).then(function (answers) {
                                         console.log("---------------Cast---------------");
                                         console.log(response.data.Actors);
                                         console.log("                                   ");
+                                        searchOutput =
+                                            "Title: " + response.data.Title + " ReleaseYear: " + response.data.Year + " IMDB Rating: " + response.data.imdbRating + " Rotten Tomatoes: " + response.data.Ratings[1].Value  +
+                                            " Country: " + response.data.Country + " Language: " + response.data.Language + " Plot: " + response.data.Plot + " Cast: " + response.data.Actors;
+
+                                        writeToLog(searchOutput);
                                     }
                                 })
                                 .catch(function (error) {
@@ -231,7 +251,7 @@ inquirer.prompt(questions).then(function (answers) {
                                             console.log(mom);
                                             console.log("                                   ");
                                         }
-                                    }
+                                    } 
                                 }).catch(function (error) {
                                     if (error.response) {
                                         // The request was made and the server responded with a status code
@@ -262,16 +282,16 @@ inquirer.prompt(questions).then(function (answers) {
                                         console.log("                                   ");
                                     }
                                 })
-                            .catch(function (err) {
+                                .catch(function (err) {
                                     console.log(err);
-                            });
-                                
-            break;
+                                });
 
-    }
-}
+                            break;
+
+                    }
+                }
             });
-break;
+            break;
     }
 });
 
